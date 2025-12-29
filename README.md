@@ -21,6 +21,7 @@ var packages = []Package{
 ### Environment Variables
 
 - `PORT` - Server port (default: `8421`)
+- `HOST` - Override the domain used in package paths (if set, takes priority over headers)
 - `HOST_HEADER` - Header to read domain from (default: `X-Forwarded-Host`)
 
 ## Usage

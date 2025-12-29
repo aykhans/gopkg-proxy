@@ -47,6 +47,7 @@ type RedirectData struct {
 }
 
 var hostHeader = getEnvOrDefault("HOST_HEADER", "X-Forwarded-Host")
+var hostOverride = os.Getenv("HOST")
 
 func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
@@ -55,8 +56,10 @@ func getEnvOrDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
-// getDomain extracts the domain from the request
-func getDomain(r *http.Request) string {
+func getHost(r *http.Request) string {
+	if hostOverride != "" {
+		return hostOverride
+	}
 	if host := r.Header.Get(hostHeader); host != "" {
 		return host
 	}
@@ -65,7 +68,7 @@ func getDomain(r *http.Request) string {
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	data := HomeData{
-		Domain:   getDomain(r),
+		Domain:   getHost(r),
 		Packages: packages,
 		Count:    len(packages),
 	}
@@ -103,7 +106,7 @@ func packageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("go-get") == "1" {
 		// Respond with meta tags for go get
 		data := VanityData{
-			Domain: getDomain(r),
+			Domain: getHost(r),
 			Path:   pkg.Path,
 			Repo:   pkg.Repo,
 			VCS:    pkg.VCS,
@@ -122,7 +125,7 @@ func packageHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Regular browser request - redirect to pkg.go.dev
 		data := RedirectData{
-			Domain: getDomain(r),
+			Domain: getHost(r),
 			Path:   pkg.Path,
 		}
 
@@ -205,6 +208,14 @@ const homeTemplate = `<!DOCTYPE html>
             font-size: 1.1em;
             color: #00ADD8;
             font-weight: bold;
+            text-decoration: none;
+        }
+        .package-name:hover {
+            text-decoration: underline;
+        }
+        .external-icon {
+            margin-left: 5px;
+            vertical-align: middle;
         }
         .package-repo {
             margin-top: 5px;
@@ -273,9 +284,9 @@ const homeTemplate = `<!DOCTYPE html>
 
     {{range $index, $pkg := .Packages}}
     <div class="package">
-        <div class="package-name">{{$.Domain}}{{$pkg.Path}}</div>
+        <a class="package-name" href="https://pkg.go.dev/{{$.Domain}}{{$pkg.Path}}" target="_blank">{{$.Domain}}{{$pkg.Path}}<svg class="external-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3M9 2h5m0 0v5m0-5L7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         <div class="package-repo">
-            Source: <a href="{{$pkg.Repo}}" target="_blank">{{$pkg.Repo}}</a>
+            Source: <a href="{{$pkg.Repo}}" target="_blank">{{$pkg.Repo}}<svg class="external-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3M9 2h5m0 0v5m0-5L7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
         </div>
         <div class="install-cmd-wrapper">
             <div class="install-cmd" id="cmd-{{$index}}">go get {{$.Domain}}{{$pkg.Path}}</div>
