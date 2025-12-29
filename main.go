@@ -165,6 +165,7 @@ const vanityTemplate = `<!DOCTYPE html>
 const redirectTemplate = `<!DOCTYPE html>
 <html>
 <head>
+    <link rel="icon" href="https://pkg.go.dev/static/shared/icon/favicon.ico">
     <meta http-equiv="refresh" content="0; url=https://pkg.go.dev/{{.Domain}}{{.Path}}">
 </head>
 <body>
@@ -176,6 +177,7 @@ const homeTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
+    <link rel="icon" href="https://pkg.go.dev/static/shared/icon/favicon.ico">
     <title>Go Packages - {{.Domain}}</title>
     <style>
         body {
