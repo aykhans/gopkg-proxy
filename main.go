@@ -17,7 +17,7 @@ type Package struct {
 // Package mappings
 var packages = []Package{
 	{
-		Path: "/go-utils",
+		Path: "/utils",
 		Repo: "https://github.com/aykhans/go-utils",
 		VCS:  "git",
 	},
